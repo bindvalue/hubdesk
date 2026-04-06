@@ -2087,15 +2087,29 @@ pub fn load_custom_client() {
         read_custom_client(data.trim());
         return;
     }
+    #[cfg(debug_assertions)]
+    if let Ok(data) = std::fs::read_to_string("./custom_client.json") {
+        read_custom_client(data.trim());
+        return;
+    }
     let Some(path) = std::env::current_exe().map_or(None, |x| x.parent().map(|x| x.to_path_buf()))
     else {
         return;
     };
     #[cfg(target_os = "macos")]
     let path = path.join("../Resources");
-    let path = path.join("custom.txt");
-    if path.is_file() {
-        let Ok(data) = std::fs::read_to_string(&path) else {
+    let custom_txt_path = path.join("custom.txt");
+    if custom_txt_path.is_file() {
+        let Ok(data) = std::fs::read_to_string(&custom_txt_path) else {
+            log::error!("Failed to read custom client config");
+            return;
+        };
+        read_custom_client(&data.trim());
+        return;
+    }
+    let custom_json_path = path.join("custom_client.json");
+    if custom_json_path.is_file() {
+        let Ok(data) = std::fs::read_to_string(&custom_json_path) else {
             log::error!("Failed to read custom client config");
             return;
         };
@@ -2180,24 +2194,33 @@ pub fn get_dst_align_rgba() -> usize {
 }
 
 pub fn read_custom_client(config: &str) {
-    let Ok(data) = decode64(config) else {
-        log::error!("Failed to decode custom client config");
-        return;
-    };
-    const KEY: &str = "5Qbwsde3unUcJBtrx9ZkvUmwFNoExHzpryHuPUdqlWM=";
-    let Some(pk) = get_rs_pk(KEY) else {
-        log::error!("Failed to parse public key of custom client");
-        return;
-    };
-    let Ok(data) = sign::verify(&data, &pk) else {
-        log::error!("Failed to dec custom client config");
-        return;
-    };
-    let Ok(mut data) =
-        serde_json::from_slice::<std::collections::HashMap<String, serde_json::Value>>(&data)
-    else {
-        log::error!("Failed to parse custom client config");
-        return;
+    let mut data = if let Ok(data) = decode64(config) {
+        const KEY: &str = "5Qbwsde3unUcJBtrx9ZkvUmwFNoExHzpryHuPUdqlWM=";
+        let Some(pk) = get_rs_pk(KEY) else {
+            log::error!("Failed to parse public key of custom client");
+            return;
+        };
+        let Ok(data) = sign::verify(&data, &pk) else {
+            log::error!("Failed to dec custom client config");
+            return;
+        };
+        let Ok(data) =
+            serde_json::from_slice::<std::collections::HashMap<String, serde_json::Value>>(&data)
+        else {
+            log::error!("Failed to parse custom client config");
+            return;
+        };
+        data
+    } else {
+        // For self-hosted custom forks, allow plain JSON configs.
+        let Ok(data) =
+            serde_json::from_str::<std::collections::HashMap<String, serde_json::Value>>(config)
+        else {
+            log::error!("Failed to decode custom client config");
+            return;
+        };
+        log::warn!("Using unsigned custom client config from plain JSON");
+        data
     };
 
     if let Some(app_name) = data.remove("app-name") {

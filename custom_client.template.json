@@ -1,0 +1,15 @@
+{
+  "app-name": "HubDesk",
+  "custom-rendezvous-server": "SEU_HBBS_OU_DOMINIO:21116",
+  "relay-server": "SEU_HBBR_OU_DOMINIO:21117",
+  "api-server": "https://SEU_DOMINIO_API",
+  "key": "COLE_AQUI_A_CHAVE_PUBLICA_DO_HBBS",
+  "default-settings": {
+    "allow-auto-update": "N",
+    "enable-lan-discovery": "N"
+  },
+  "override-settings": {
+    "disable-change-id": "Y",
+    "disable-change-permanent-password": "Y"
+  }
+}
