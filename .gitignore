@@ -72,3 +72,4 @@ flutter/.dart_tool/
 flutter/.packages
 flutter/windows/flutter/ephemeral/
 flutter/flutter_*.log
+libs/portable/app_metadata.toml
