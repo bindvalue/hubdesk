@@ -30,6 +30,7 @@ appimage/*.AppImage
 appimage/appimage-build
 appimage/*.xz
 # flutter
+flutter/build/**
 flutter/linux/build/**
 flutter/linux/cmake-build-debug/**
 # flatpak
