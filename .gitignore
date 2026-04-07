@@ -57,3 +57,18 @@ vcpkg_installed
 flutter/lib/generated_plugin_registrant.dart
 libsciter.dylib
 flutter/web/
+
+# local/generated build artifacts
+hubdesk_msvc_probe.obj
+*.obj
+*.ilk
+*.exp
+*.lib
+*.iobj
+*.ipdb
+
+# flutter temporary/generated state
+flutter/.dart_tool/
+flutter/.packages
+flutter/windows/flutter/ephemeral/
+flutter/flutter_*.log

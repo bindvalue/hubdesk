@@ -245,8 +245,10 @@ fn main() {
     env::set_var("CARGO_CFG_TARGET_FEATURE", "crt-static");
 
     find_package("libyuv");
-    gen_vcpkg_package("libvpx", "vpx_ffi.h", "vpx_ffi.rs", "^[vV].*");
-    gen_vcpkg_package("aom", "aom_ffi.h", "aom_ffi.rs", "^(aom|AOM|OBU|AV1).*");
+    gen_vcpkg_package("libvpx", "vpx_ffi.h", "vpx_ffi.rs", ".*");
+    // Newer libaom headers include helper structs (e.g. cfg_options_t) referenced by
+    // aom_codec_enc_cfg_t; keep a broad allowlist so bindgen does not emit opaque stubs.
+    gen_vcpkg_package("aom", "aom_ffi.h", "aom_ffi.rs", ".*");
     gen_vcpkg_package("libyuv", "yuv_ffi.h", "yuv_ffi.rs", ".*");
     // ffmpeg();
 

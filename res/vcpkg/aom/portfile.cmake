@@ -8,7 +8,7 @@ vcpkg_find_acquire_program(PERL)
 get_filename_component(PERL_PATH ${PERL} DIRECTORY)
 vcpkg_add_to_path(${PERL_PATH})
 
-if(DEFINED ENV{USE_AOM_391})
+if(DEFINED ENV{USE_AOM_391} OR VCPKG_TARGET_IS_WINDOWS)
     vcpkg_from_git(
         OUT_SOURCE_PATH SOURCE_PATH
         URL "https://aomedia.googlesource.com/aom"
@@ -36,6 +36,13 @@ if(VCPKG_TARGET_IS_UWP OR (VCPKG_TARGET_IS_WINDOWS AND VCPKG_TARGET_ARCHITECTURE
     # UWP + aom's assembler files result in weirdness and build failures
     # Also, disable assembly on ARM and ARM64 Windows to fix compilation issues.
     set(aom_target_cpu "-DAOM_TARGET_CPU=generic")
+endif()
+
+# Workaround for some Windows NASM toolchain combinations failing with:
+# "Unsupported nasm: multipass optimization not supported."
+# Force generic target to avoid x86 NASM optimization path.
+if(VCPKG_TARGET_IS_WINDOWS)
+  set(aom_target_cpu "-DAOM_TARGET_CPU=generic")
 endif()
 
 if(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm" AND VCPKG_TARGET_IS_LINUX)

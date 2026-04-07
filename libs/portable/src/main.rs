@@ -17,7 +17,8 @@ const APP_METADATA: &[u8] = include_bytes!("../app_metadata.toml");
 const APP_METADATA: &[u8] = &[];
 const APP_METADATA_CONFIG: &str = "meta.toml";
 const META_LINE_PREFIX_TIMESTAMP: &str = "timestamp = ";
-const APP_PREFIX: &str = "rustdesk";
+const APP_PREFIX: &str = "hubdesk";
+const LEGACY_APP_PREFIX: &str = "rustdesk";
 const APPNAME_RUNTIME_ENV_KEY: &str = "RUSTDESK_APPNAME";
 #[cfg(windows)]
 const SET_FOREGROUND_WINDOW_ENV_KEY: &str = "SET_FOREGROUND_WINDOW";
@@ -71,7 +72,15 @@ fn setup(
     } else {
         // home dir
         if let Some(dir) = dirs::data_local_dir() {
-            dir.join(APP_PREFIX)
+            let preferred = dir.join(APP_PREFIX);
+            if !preferred.exists() {
+                let legacy = dir.join(LEGACY_APP_PREFIX);
+                if legacy.exists() {
+                    // Best-effort migration for users that already had extracted files.
+                    let _ = std::fs::rename(&legacy, &preferred);
+                }
+            }
+            preferred
         } else {
             eprintln!("not found data local dir");
             return None;
