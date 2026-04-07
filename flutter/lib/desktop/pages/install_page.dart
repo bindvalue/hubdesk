@@ -62,6 +62,7 @@ class _InstallPageBody extends StatefulWidget {
 
 class _InstallPageBodyState extends State<_InstallPageBody>
     with WindowListener {
+  static const String _brandAppName = 'HubDesk';
   late final TextEditingController controller;
   final RxBool startmenu = true.obs;
   final RxBool desktopicon = true.obs;
@@ -76,7 +77,8 @@ class _InstallPageBodyState extends State<_InstallPageBody>
   );
 
   _InstallPageBodyState() {
-    controller = TextEditingController(text: bind.installInstallPath());
+    controller =
+        TextEditingController(text: _normalizeInstallPath(bind.installInstallPath()));
     final installOptions = jsonDecode(bind.installInstallOptions());
     startmenu.value = installOptions['STARTMENUSHORTCUTS'] != '0';
     desktopicon.value = installOptions['DESKTOPSHORTCUTS'] != '0';
@@ -165,7 +167,7 @@ class _InstallPageBodyState extends State<_InstallPageBody>
                   .marginOnly(bottom: 7),
               Option(desktopicon, label: 'Create desktop icon')
                   .marginOnly(bottom: 7),
-              Option(printer, label: 'Install {$appName} Printer'),
+              Option(printer, label: _installPrinterLabel()),
               Container(
                   padding: EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -268,7 +270,22 @@ class _InstallPageBodyState extends State<_InstallPageBody>
     String? install_path = await FilePicker.platform
         .getDirectoryPath(initialDirectory: controller.text);
     if (install_path != null) {
-      controller.text = join(install_path, await bind.mainGetAppName());
+      controller.text = join(install_path, _brandAppName);
     }
+  }
+
+  String _normalizeInstallPath(String input) {
+    final normalized = input.replaceAll('/', '\\');
+    if (normalized.endsWith('\\RustDesk')) {
+      return normalized.substring(0, normalized.length - '\\RustDesk'.length) +
+          '\\$_brandAppName';
+    }
+    return normalized;
+  }
+
+  String _installPrinterLabel() {
+    return translate('Install {$appName} Printer')
+        .replaceAll('RustDesk', _brandAppName)
+        .replaceAll(appName, _brandAppName);
   }
 }
